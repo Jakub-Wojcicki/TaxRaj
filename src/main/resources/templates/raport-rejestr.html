@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Tax-Raj | ' + ${tytul}">Rejestr</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/svg/logo.svg}">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/faktura-form.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
+</head>
+<body>
+<div class="layout">
+
+    <aside th:replace="~{fragments/sidebar :: sidebar('raporty')}"></aside>
+
+    <div class="main">
+
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1 th:text="${tytul}">Rejestr</h1>
+                <p th:text="${czySprzedaz ? 'Faktury sprzedażowe za okres' : 'Faktury kosztowe za okres'}">
+                    Faktury za okres
+                </p>
+            </div>
+            <div class="topbar-right">
+                <a th:href="@{/raporty}" class="btn">← Powrót do raportów</a>
+            </div>
+        </header>
+
+        <div class="content">
+
+            <!-- FORMULARZ -->
+            <div class="form-card">
+                <h2 class="form-section-title">Parametry raportu</h2>
+
+                <form method="get"
+                      th:action="${czySprzedaz ? '/raporty/rejestr-sprzedazy' : '/raporty/rejestr-zakupow'}">
+                    <div class="form-grid">
+                        <div class="form-group-v">
+                            <label>Klient</label>
+                            <select name="klientId" required>
+                                <option value="">— wybierz —</option>
+                                <option th:each="k : ${klienci}" th:value="${k.id}" th:text="${k.nazwa}"
+                                        th:selected="${wybranyKlientId != null and wybranyKlientId == k.id}"></option>
+                            </select>
+                        </div>
+
+                        <div class="form-group-v">
+                            <label>Okres</label>
+                            <input type="text" name="okres" class="month-picker" th:value="${wybranyOkres}"
+                                   placeholder="Wybierz miesiąc" required>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Generuj rejestr</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- WYNIKI -->
+            <div th:if="${wygenerowany}">
+
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 16px;">
+                    <a target="_blank" class="btn"
+                       th:href="${czySprzedaz
+                        ? '/raporty/rejestr-sprzedazy/pdf?klientId=' + wybranyKlientId + '&okres=' + wybranyOkres
+                        : '/raporty/rejestr-zakupow/pdf?klientId=' + wybranyKlientId + '&okres=' + wybranyOkres}">
+                        ...Pobierz PDF...
+                    </a>
+                    <a class="btn"
+                       th:href="${czySprzedaz
+                          ? '/raporty/rejestr-sprzedazy/xlsx?klientId=' + wybranyKlientId + '&okres=' + wybranyOkres
+                          : '/raporty/rejestr-zakupow/xlsx?klientId=' + wybranyKlientId + '&okres=' + wybranyOkres}">
+                        ...Pobierz XLSX...
+                    </a>
+                </div>
+
+                <div class="form-card">
+                    <div class="card-header-row">
+                        <h2 class="form-section-title" th:text="${tytul} + ' — ' + ${klient.nazwa} + ', ' + ${okres}">Rejestr</h2>
+                    </div>
+
+                    <table class="positions-table" th:if="${not #lists.isEmpty(faktury)}">
+                        <thead>
+                        <tr>
+                            <th>Lp.</th>
+                            <th>Numer</th>
+                            <th>Data</th>
+                            <th>Kontrahent</th>
+                            <th>Status</th>
+                            <th style="text-align: right;">Netto</th>
+                            <th style="text-align: right;">VAT</th>
+                            <th style="text-align: right;">Brutto</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="f, iter : ${faktury}">
+                            <td th:text="${iter.count}"></td>
+                            <td th:text="${f.numer}"></td>
+                            <td th:text="${f.dataWystawienia}"></td>
+                            <td th:text="${f.kontrahent != null ? f.kontrahent.nazwa : '—'}"></td>
+                            <td>
+                  <span class="badge"
+                        th:classappend="${f.status.name() == 'ZAPLACONA'} ? 'badge-green' : (${f.status.name() == 'NIEZAPLACONA' or f.status.name() == 'PRZETERMINOWANA'} ? 'badge-red' : 'badge-gold')"
+                        th:text="${f.status}">Status</span>
+                            </td>
+                            <td style="text-align: right;" th:text="${#numbers.formatDecimal(f.kwotaNetto, 1, 'POINT', 2, 'COMMA')} + ' zł'"></td>
+                            <td style="text-align: right;" th:text="${#numbers.formatDecimal(f.kwotaVat, 1, 'POINT', 2, 'COMMA')} + ' zł'"></td>
+                            <td style="text-align: right;" th:text="${#numbers.formatDecimal(f.kwotaBrutto, 1, 'POINT', 2, 'COMMA')} + ' zł'"></td>
+                        </tr>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <td colspan="5" style="text-align: right; font-weight: 600;">Razem:</td>
+                            <td class="total-net" style="text-align: right;" th:text="${#numbers.formatDecimal(sumaNetto, 1, 'POINT', 2, 'COMMA')} + ' zł'">0,00 zł</td>
+                            <td style="text-align: right; font-weight: 600;" th:text="${#numbers.formatDecimal(sumaVat, 1, 'POINT', 2, 'COMMA')} + ' zł'">0,00 zł</td>
+                            <td class="total-gross" style="text-align: right;" th:text="${#numbers.formatDecimal(sumaBrutto, 1, 'POINT', 2, 'COMMA')} + ' zł'">0,00 zł</td>
+                        </tr>
+                        </tfoot>
+                    </table>
+
+                    <p th:if="${#lists.isEmpty(faktury)}"
+                       style="text-align: center; color: var(--ink-muted); padding: 30px;">
+                        Brak faktur w wybranym okresie dla tego klienta.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/month-picker.js}"></script>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
+</html>

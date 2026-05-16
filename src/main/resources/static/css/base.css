@@ -1,0 +1,168 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --ink:        #1a1a18;
+  --ink-soft:   #4a4a44;
+  --ink-muted:  #8a8a80;
+  --paper:      #f5f2eb;
+  --paper-dark: #ece8dc;
+  --white:      #fdfcf8;
+  --gold:       #b8973a;
+  --gold-light: #d4af5a;
+  --gold-pale:  rgba(184, 151, 58, .08);
+  --green:      #2d7a4f;
+  --green-pale: rgba(45, 122, 79, .08);
+  --red:        #c0392b;
+  --red-pale:   rgba(192, 57, 43, .08);
+  --blue:       #2563a8;
+  --blue-pale:  rgba(37, 99, 168, .08);
+  --radius:     12px;
+  --sidebar-w:  240px;
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* ── TYPOGRAPHY ── */
+.font-display {
+  font-family: 'Playfair Display', serif;
+}
+
+/* ── BADGES ── */
+.badge {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.badge-green { background: var(--green-pale); color: var(--green); }
+.badge-red   { background: var(--red-pale);   color: var(--red); }
+.badge-gold  { background: var(--gold-pale);  color: #8a6e20; }
+.badge-blue  { background: var(--blue-pale);  color: var(--blue); }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1.5px solid var(--paper-dark);
+  background: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: border-color .2s, color .2s;
+}
+
+.btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.btn:hover {
+  border-color: var(--gold);
+  color: var(--ink);
+}
+
+.btn-primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--white);
+}
+
+.btn-primary:hover {
+  background: #2a2a26;
+  border-color: #2a2a26;
+  color: var(--white);
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.anim-fade-up {
+  opacity: 0;
+  animation: fadeUp .5s ease forwards;
+}
+
+/* ── WALIDACJA FORMULARZY ── */
+.field-error {
+  display: block;
+  font-size: 12px;
+  color: var(--red);
+  margin-top: 4px;
+  font-weight: 400;
+}
+
+input.input-error,
+select.input-error {
+  border-color: var(--red) !important;
+  background: rgba(192, 57, 43, .03);
+}
+
+input.input-error:focus,
+select.input-error:focus {
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, .12) !important;
+}
+
+.form-summary-error {
+  background: rgba(192, 57, 43, .08);
+  border-left: 3px solid var(--red);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  color: var(--red);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.table-card:not(.dt-ready) {
+  visibility: hidden;
+  opacity: 0;
+  max-height: 600px;
+  overflow: hidden;
+}
+
+.table-card.dt-ready {
+  visibility: visible;
+  opacity: 1;
+  animation: tableFadeIn 0.4s ease-out;
+}
+
+@keyframes tableFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

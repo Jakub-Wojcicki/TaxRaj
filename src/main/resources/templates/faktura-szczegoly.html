@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Tax-Raj | Szczegóły faktury</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/svg/logo.svg}">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/faktura-form.css}">
+    <style>
+        .details-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+        .details-grid .full { grid-column: 1 / -1; }
+        .detail-label {
+            font-size: 11px; font-weight: 500; letter-spacing: .08em;
+            text-transform: uppercase; color: var(--ink-muted); margin-bottom: 4px;
+        }
+        .detail-value { font-size: 15px; color: var(--ink); }
+        .detail-value.big { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--gold); }
+    </style>
+</head>
+<body>
+<div class="layout">
+
+    <aside th:replace="~{fragments/sidebar :: sidebar('faktury')}"></aside>
+
+    <div class="main">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1 th:text="'Faktura ' + ${faktura.numer}">Faktura</h1>
+                <p>Szczegóły faktury</p>
+            </div>
+            <div class="topbar-right">
+                <a th:href="@{/faktury/{id}/pdf(id=${faktura.id})}" target="_blank" class="btn btn-primary">
+                    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    Pobierz PDF
+                </a>
+                <a th:href="@{/faktury/{id}/edytuj(id=${faktura.id})}" class="btn">Edytuj</a>
+                <a th:href="@{/faktury}" class="btn">← Powrót</a>
+            </div>
+        </header>
+
+        <div class="content">
+
+            <div class="form-card">
+                <h2 class="form-section-title">Dane faktury</h2>
+
+                <div class="details-grid">
+                    <div>
+                        <div class="detail-label">Numer</div>
+                        <div class="detail-value" th:text="${faktura.numer}"></div>
+                    </div>
+                    <div>
+                        <div class="detail-label">Typ</div>
+                        <div class="detail-value" th:text="${faktura.typ}"></div>
+                    </div>
+                    <div>
+                        <div class="detail-label">Data wystawienia</div>
+                        <div class="detail-value" th:text="${faktura.dataWystawienia}"></div>
+                    </div>
+                    <div>
+                        <div class="detail-label">Data płatności</div>
+                        <div class="detail-value" th:text="${faktura.dataPlatnosci != null ? faktura.dataPlatnosci : '—'}"></div>
+                    </div>
+                    <div>
+                        <div class="detail-label">Klient</div>
+                        <div class="detail-value" th:text="${faktura.klient != null ? faktura.klient.nazwa : '—'}"></div>
+                    </div>
+                    <div>
+                        <div class="detail-label">Kontrahent</div>
+                        <div class="detail-value" th:text="${faktura.kontrahent != null ? faktura.kontrahent.nazwa : '—'}"></div>
+                    </div>
+                    <div>
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value">
+              <span class="badge"
+                    th:classappend="${faktura.status.name() == 'ZAPLACONA'} ? 'badge-green' : (${faktura.status.name() == 'NIEZAPLACONA' or faktura.status.name() == 'PRZETERMINOWANA'} ? 'badge-red' : (${faktura.status.name() == 'CZESCIOWO_ZAPLACONA'} ? 'badge-gold' : 'badge-blue'))"
+                    th:text="${faktura.status}">Status</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="detail-label">Waluta</div>
+                        <div class="detail-value" th:text="${faktura.waluta != null ? faktura.waluta : 'PLN'}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- POZYCJE -->
+            <div class="form-card">
+                <h2 class="form-section-title">Pozycje</h2>
+
+                <div class="positions-wrapper">
+                    <table class="positions-table">
+                        <thead>
+                        <tr>
+                            <th>Nazwa</th>
+                            <th>Ilość</th>
+                            <th>Jedn.</th>
+                            <th>Cena netto</th>
+                            <th>VAT %</th>
+                            <th>Wart. netto</th>
+                            <th>Wart. brutto</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="p : ${faktura.pozycje}">
+                            <td th:text="${p.nazwa}"></td>
+                            <td th:text="${p.ilosc}"></td>
+                            <td th:text="${p.jednostka != null ? p.jednostka : '—'}"></td>
+                            <td th:text="${#numbers.formatDecimal(p.cenaNetto, 1, 'POINT', 2, 'COMMA')} + ' zł'"></td>
+                            <td th:text="${p.stawkaVat} + '%'"></td>
+                            <td th:text="${#numbers.formatDecimal(p.obliczWartoscNetto(), 1, 'POINT', 2, 'COMMA')} + ' zł'"></td>
+                            <td th:text="${#numbers.formatDecimal(p.obliczWartoscBrutto(), 1, 'POINT', 2, 'COMMA')} + ' zł'"></td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(faktura.pozycje)}">
+                            <td colspan="7" style="text-align:center; padding:24px; color:var(--ink-muted);">Brak pozycji</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- PODSUMOWANIE -->
+            <div class="form-card">
+                <h2 class="form-section-title">Podsumowanie</h2>
+                <div class="details-grid">
+                    <div>
+                        <div class="detail-label">Kwota netto</div>
+                        <div class="detail-value" th:text="${faktura.kwotaNetto != null ? #numbers.formatDecimal(faktura.kwotaNetto, 1, 'POINT', 2, 'COMMA') + ' zł' : '—'}"></div>
+                    </div>
+                    <div>
+                        <div class="detail-label">Kwota VAT</div>
+                        <div class="detail-value" th:text="${faktura.kwotaVat != null ? #numbers.formatDecimal(faktura.kwotaVat, 1, 'POINT', 2, 'COMMA') + ' zł' : '—'}"></div>
+                    </div>
+                    <div class="full">
+                        <div class="detail-label">Kwota brutto</div>
+                        <div class="detail-value big" th:text="${faktura.kwotaBrutto != null ? #numbers.formatDecimal(faktura.kwotaBrutto, 1, 'POINT', 2, 'COMMA') + ' zł' : '—'}"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,161 @@
+.form-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    border: 1px solid var(--paper-dark);
+    padding: 28px;
+    margin-bottom: 20px;
+}
+
+.form-section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--ink);
+    margin-bottom: 20px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+.form-group-v {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group-v label {
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-weight: 500;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+}
+
+.form-group-v input,
+.form-group-v select {
+    padding: 10px 12px;
+    border: 1.5px solid var(--paper-dark);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    background: var(--white);
+    color: var(--ink);
+    outline: none;
+    transition: border-color .2s;
+}
+
+.form-group-v input:focus,
+.form-group-v select:focus { border-color: var(--gold); }
+
+.card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.card-header-row .form-section-title { margin-bottom: 0; }
+
+/* TABELA POZYCJI */
+.positions-wrapper { overflow-x: auto; }
+
+.positions-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.positions-table th {
+    text-align: left;
+    padding: 8px 6px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    border-bottom: 1px solid var(--paper-dark);
+}
+
+.positions-table td {
+    padding: 8px 6px;
+    vertical-align: middle;
+}
+
+.positions-table input {
+    width: 100%;
+    padding: 7px 9px;
+    border: 1.5px solid var(--paper-dark);
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    background: var(--white);
+    color: var(--ink);
+    outline: none;
+    transition: border-color .2s;
+}
+
+.positions-table input:focus { border-color: var(--gold); }
+
+.positions-table .net-value,
+.positions-table .gross-value {
+    font-weight: 500;
+    color: var(--ink-soft);
+    text-align: right;
+    padding-right: 10px;
+}
+
+.positions-table tfoot td {
+    padding-top: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    border-top: 2px solid var(--paper-dark);
+}
+
+.positions-table .total-net,
+.positions-table .total-gross {
+    text-align: right;
+    padding-right: 10px;
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    color: var(--gold);
+}
+
+.remove-row {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: var(--red-pale);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s;
+}
+
+.remove-row svg {
+    width: 14px;
+    height: 14px;
+    stroke: var(--red);
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+.remove-row:hover { background: var(--red); }
+.remove-row:hover svg { stroke: white; }
+
+.info-text {
+    font-size: 12px;
+    color: var(--ink-muted);
+    margin-top: 16px;
+    font-style: italic;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}

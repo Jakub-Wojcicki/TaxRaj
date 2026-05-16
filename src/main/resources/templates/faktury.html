@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Tax-Raj | Faktury</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/svg/logo.svg}">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+</head>
+<body>
+<div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside th:replace="~{fragments/sidebar :: sidebar('faktury')}"></aside>
+
+    <!-- MAIN -->
+    <div class="main">
+
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Faktury</h1>
+                <p>Lista wszystkich faktur</p>
+            </div>
+            <div class="topbar-right">
+                <a th:href="@{/faktury/nowa}" class="btn btn-primary">
+                    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Nowa faktura
+                </a>
+            </div>
+        </header>
+
+        <div class="filter-bar">
+            <form th:action="@{/faktury}" method="get" class="filter-form">
+
+                <div class="filter-group">
+                    <label>Numer faktury</label>
+                    <input type="text" name="numer" th:value="${filtr.numer}" placeholder="FV/2026/05/...">
+                </div>
+
+                <div class="filter-group">
+                    <label>Klient</label>
+                    <select name="klientId">
+                        <option value="">— wszyscy —</option>
+                        <option th:each="k : ${klienci}" th:value="${k.id}" th:text="${k.nazwa}"
+                                th:selected="${filtr.klientId != null and filtr.klientId == k.id}"></option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Typ</label>
+                    <select name="typ">
+                        <option value="">— wszystkie —</option>
+                        <option th:each="t : ${typy}" th:value="${t}" th:text="${t}"
+                                th:selected="${filtr.typ != null and filtr.typ == t}"></option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select name="status">
+                        <option value="">— wszystkie —</option>
+                        <option th:each="s : ${statusy}" th:value="${s}" th:text="${s}"
+                                th:selected="${filtr.status != null and filtr.status == s}"></option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>Data od</label>
+                    <input type="date" name="od" th:value="${filtr.od}">
+                </div>
+
+                <div class="filter-group">
+                    <label>Data do</label>
+                    <input type="date" name="doDaty" th:value="${filtr.doDaty}">
+                </div>
+
+                <div class="filter-actions">
+                    <button type="submit" class="btn btn-primary">Filtruj</button>
+                    <a th:href="@{/faktury}" class="btn">Wyczyść</a>
+                </div>
+
+            </form>
+        </div>
+
+        <div class="content">
+            <div class="table-card">
+                <table id="invoiceTable">
+                    <thead>
+                    <tr>
+                        <th>
+                            <a th:href="@{/faktury(
+                              sort='numer',
+                              kierunek=${sortPole == 'numer' and sortKierunek == 'ASC' ? 'DESC' : 'ASC'},
+                              numer=${filtr.numer},
+                              klientId=${filtr.klientId},
+                              typ=${filtr.typ},
+                              status=${filtr.status},
+                              od=${filtr.od},
+                              doDaty=${filtr.doDaty})}"
+                               class="sort-link">
+                                Numer
+                                <span th:if="${sortPole == 'numer'}" th:text="${sortKierunek == 'ASC' ? '↑' : '↓'}">↓</span>
+                            </a>
+                        </th>
+                        <th>Klient</th>
+                        <th>
+                            <a th:href="@{/faktury(
+                              sort='dataWystawienia',
+                              kierunek=${sortPole == 'dataWystawienia' and sortKierunek == 'ASC' ? 'DESC' : 'ASC'},
+                              numer=${filtr.numer},
+                              klientId=${filtr.klientId},
+                              typ=${filtr.typ},
+                              status=${filtr.status},
+                              od=${filtr.od},
+                              doDaty=${filtr.doDaty})}"
+                               class="sort-link">
+                                Data wystawienia
+                                <span th:if="${sortPole == 'dataWystawienia'}" th:text="${sortKierunek == 'ASC' ? '↑' : '↓'}">↓</span>
+                            </a>
+                        </th>
+                        <th>
+                            <a th:href="@{/faktury(
+                              sort='kwotaBrutto',
+                              kierunek=${sortPole == 'kwotaBrutto' and sortKierunek == 'ASC' ? 'DESC' : 'ASC'},
+                              numer=${filtr.numer},
+                              klientId=${filtr.klientId},
+                              typ=${filtr.typ},
+                              status=${filtr.status},
+                              od=${filtr.od},
+                              doDaty=${filtr.doDaty})}"
+                               class="sort-link">
+                                Kwota brutto
+                                <span th:if="${sortPole == 'kwotaBrutto'}" th:text="${sortKierunek == 'ASC' ? '↑' : '↓'}">↓</span>
+                            </a>
+                        </th>
+                        <th>
+                            <a th:href="@{/faktury(
+                              sort='status',
+                              kierunek=${sortPole == 'status' and sortKierunek == 'ASC' ? 'DESC' : 'ASC'},
+                              numer=${filtr.numer},
+                              klientId=${filtr.klientId},
+                              typ=${filtr.typ},
+                              status=${filtr.status},
+                              od=${filtr.od},
+                              doDaty=${filtr.doDaty})}"
+                               class="sort-link">
+                                Status
+                                <span th:if="${sortPole == 'status'}" th:text="${sortKierunek == 'ASC' ? '↑' : '↓'}">↓</span>
+                            </a>
+                        </th>
+                        <th>
+                            <a th:href="@{/faktury(
+                              sort='typ',
+                              kierunek=${sortPole == 'typ' and sortKierunek == 'ASC' ? 'DESC' : 'ASC'},
+                              numer=${filtr.numer},
+                              klientId=${filtr.klientId},
+                              typ=${filtr.typ},
+                              status=${filtr.status},
+                              od=${filtr.od},
+                              doDaty=${filtr.doDaty})}"
+                               class="sort-link">
+                                Typ
+                                <span th:if="${sortPole == 'typ'}" th:text="${sortKierunek == 'ASC' ? '↑' : '↓'}">↓</span>
+                            </a>
+                        </th>
+                        <th>Akcje</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="f : ${faktury}">
+                        <td th:text="${f.numer}"></td>
+                        <td th:text="${f.klient != null ? f.klient.nazwa : '—'}"></td>
+                        <td th:text="${f.dataWystawienia}"></td>
+                        <td th:text="${#numbers.formatDecimal(f.kwotaBrutto, 1, 'POINT', 2, 'COMMA')} + ' zł'"></td>
+                        <td>
+                <span class="badge"
+                      th:classappend="${f.status.name() == 'ZAPLACONA'} ? 'badge-green' : (${f.status.name() == 'NIEZAPLACONA'} ? 'badge-red' : (${f.status.name() == 'CZESCIOWO_ZAPLACONA'} ? 'badge-gold' : 'badge-blue'))"
+                      th:text="${f.status}">Status</span>
+                        </td>
+                        <td th:text="${f.typ}"></td>
+                        <td>
+                            <a th:href="@{/faktury/{id}(id=${f.id})}"
+                               style="margin-right:8px; color:var(--ink-soft); text-decoration:none;">Szczegóły</a>
+                            <a th:href="@{/faktury/{id}/pdf(id=${f.id})}" target="_blank"
+                               style="margin-right:8px; color:var(--blue); text-decoration:none;">PDF</a>
+                            <a th:href="@{/faktury/{id}/edytuj(id=${f.id})}" style="margin-right:8px; color:var(--gold); text-decoration:none;">Edytuj</a>
+                            <a th:href="@{/faktury/{id}/usun(id=${f.id})}"
+                               onclick="return confirm('Czy na pewno usunąć tę fakturę?');"
+                               style="color:var(--red); text-decoration:none;">Usuń</a>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(faktury)}">
+                        <td colspan="7" style="text-align:center; padding:32px; color:var(--ink-muted);">
+                            Brak faktur. <a th:href="@{/faktury/nowa}" style="color:var(--gold);">Dodaj pierwszą</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script th:src="@{/js/faktury.js}"></script>
+</body>
+</html>

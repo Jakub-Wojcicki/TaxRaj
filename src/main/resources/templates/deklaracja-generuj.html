@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Tax-Raj | Generuj deklarację</title>
+  <link rel="icon" type="image/svg+xml" th:href="@{/svg/logo.svg}">
+  <link rel="stylesheet" th:href="@{/css/base.css}">
+  <link rel="stylesheet" th:href="@{/css/layout.css}">
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+  <link rel="stylesheet" th:href="@{/css/faktura-form.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside th:replace="~{fragments/sidebar :: sidebar('deklaracje')}"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1>Generuj deklarację z faktur</h1>
+        <p>System automatycznie zsumuje VAT z faktur klienta za wybrany okres</p>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="form-card" style="max-width: 700px;">
+        <h2 class="form-section-title">Parametry generowania</h2>
+
+        <form th:action="@{/deklaracje/generuj}" method="post">
+
+          <div class="form-grid">
+            <div class="form-group-v">
+              <label>Klient</label>
+              <select name="klientId" required>
+                <option value="">— wybierz —</option>
+                <option th:each="k : ${klienci}" th:value="${k.id}" th:text="${k.nazwa}"></option>
+              </select>
+            </div>
+
+            <div class="form-group-v">
+              <label>Typ deklaracji</label>
+              <select name="typ" required>
+                <option value="">— wybierz —</option>
+                <option th:each="t : ${typy}" th:value="${t}" th:text="${t}"></option>
+              </select>
+            </div>
+
+            <div class="form-group-v full">
+              <label>Okres rozliczeniowy</label>
+              <input type="month" name="okres" placeholder="2026-05" required>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            <div>
+              <strong>Jak to działa:</strong>
+              System pobierze wszystkie faktury wybranego klienta z podanego miesiąca i obliczy:
+              <ul>
+                <li><strong>VAT należny</strong> — suma VAT z faktur sprzedażowych</li>
+                <li><strong>VAT naliczony</strong> — suma VAT z faktur kosztowych</li>
+                <li><strong>Podstawa</strong> — suma kwot netto z faktur sprzedażowych</li>
+              </ul>
+              Po wygenerowaniu zostaniesz przekierowany do edycji deklaracji, gdzie możesz sprawdzić i ewentualnie skorygować dane przed zatwierdzeniem.
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Wygeneruj deklarację</button>
+            <a th:href="@{/deklaracje}" class="btn">Anuluj</a>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .info-box {
+    display: flex;
+    gap: 14px;
+    padding: 14px 18px;
+    background: var(--gold-pale);
+    border-left: 3px solid var(--gold);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    margin: 16px 0 8px;
+  }
+  .info-box svg {
+    stroke: var(--gold);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .info-box ul {
+    margin: 8px 0;
+    padding-left: 20px;
+  }
+  .info-box li {
+    margin: 2px 0;
+  }
+  .info-box strong {
+    color: var(--ink);
+  }
+</style>
+<script th:src="@{/js/month-picker.js}"></script>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
+</html>

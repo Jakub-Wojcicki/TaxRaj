@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Tax-Raj | Kontrahenci</title>
+  <link rel="icon" type="image/svg+xml" th:href="@{/svg/logo.svg}">
+  <link rel="stylesheet" th:href="@{/css/base.css}">
+  <link rel="stylesheet" th:href="@{/css/layout.css}">
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+</head>
+<body>
+<div class="layout">
+
+  <aside th:replace="~{fragments/sidebar :: sidebar('kontrahenci')}"></aside>
+
+  <div class="main">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1>Kontrahenci</h1>
+        <p>Lista podmiotów występujących na fakturach</p>
+      </div>
+      <div class="topbar-right">
+        <a th:href="@{/kontrahenci/nowy}" class="btn btn-primary">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nowy kontrahent
+        </a>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="table-card">
+        <table id="contractorTable">
+          <thead>
+          <tr>
+            <th>Nazwa</th>
+            <th>NIP</th>
+            <th>Adres</th>
+            <th>Email</th>
+            <th>Telefon</th>
+            <th>Akcje</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="k : ${kontrahenci}">
+            <td th:text="${k.nazwa}"></td>
+            <td th:text="${k.nip != null ? k.nip : '—'}"></td>
+            <td th:text="${k.adres != null ? k.adres : '—'}"></td>
+            <td th:text="${k.email != null ? k.email : '—'}"></td>
+            <td th:text="${k.telefon != null ? k.telefon : '—'}"></td>
+            <td>
+              <a th:href="@{/kontrahenci/{id}/edytuj(id=${k.id})}"
+                 style="margin-right:8px; color:var(--gold); text-decoration:none;">Edytuj</a>
+              <a th:href="@{/kontrahenci/{id}/usun(id=${k.id})}"
+                 onclick="return confirm('Czy na pewno usunąć tego kontrahenta? Powiązane faktury mogą zostać uszkodzone.');"
+                 style="color:var(--red); text-decoration:none;">Usuń</a>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(kontrahenci)}">
+            <td colspan="6" style="text-align:center; padding:32px; color:var(--ink-muted);">
+              Brak kontrahentów. <a th:href="@{/kontrahenci/nowy}" style="color:var(--gold);">Dodaj pierwszego</a>
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script th:src="@{/js/kontrahenci.js}"></script>
+</body>
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Tax-Raj | Zestawienie VAT</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/svg/logo.svg}">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/faktura-form.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/style.css">
+    <style>
+        .report-summary {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .summary-block {
+            background: var(--white);
+            border: 1px solid var(--paper-dark);
+            border-radius: var(--radius);
+            padding: 22px 24px;
+        }
+        .summary-block h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 15px;
+            color: var(--ink);
+            margin-bottom: 14px;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 13px;
+            color: var(--ink-soft);
+        }
+        .summary-row.total {
+            border-top: 1px solid var(--paper-dark);
+            margin-top: 8px;
+            padding-top: 10px;
+            font-weight: 600;
+            color: var(--ink);
+        }
+        .saldo-card {
+            background: var(--gold-pale);
+            border: 1px solid var(--gold);
+            border-radius: var(--radius);
+            padding: 24px 28px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .saldo-card .label {
+            font-size: 11px;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--ink-muted);
+            margin-bottom: 6px;
+        }
+        .saldo-card .value {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            color: var(--gold);
+            font-weight: 600;
+        }
+        .saldo-card .desc {
+            font-size: 13px;
+            color: var(--ink-soft);
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+
+    <aside th:replace="~{fragments/sidebar :: sidebar('raporty')}"></aside>
+
+    <div class="main">
+
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Zestawienie VAT</h1>
+                <p>Suma podatku VAT należnego i naliczonego za okres</p>
+            </div>
+            <div class="topbar-right">
+                <a th:href="@{/raporty}" class="btn">← Powrót do raportów</a>
+            </div>
+        </header>
+
+        <div class="content">
+
+            <!-- FORMULARZ PARAMETRÓW -->
+            <div class="form-card">
+                <h2 class="form-section-title">Parametry raportu</h2>
+
+                <form th:action="@{/raporty/vat}" method="get">
+                    <div class="form-grid">
+                        <div class="form-group-v">
+                            <label>Klient</label>
+                            <select name="klientId" required>
+                                <option value="">— wybierz —</option>
+                                <option th:each="k : ${klienci}" th:value="${k.id}" th:text="${k.nazwa}"
+                                        th:selected="${wybranyKlientId != null and wybranyKlientId == k.id}"></option>
+                            </select>
+                        </div>
+
+                        <div class="form-group-v">
+                            <label>Okres</label>
+                            <input type="text" name="okres" class="month-picker" th:value="${wybranyOkres}" placeholder="Wybierz miesiąc" required>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Generuj zestawienie</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- WYNIKI -->
+            <div th:if="${wygenerowany}">
+
+                <!-- PASEK EKSPORTU -->
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-bottom: 16px;">
+                    <a th:href="@{/raporty/vat/pdf(klientId=${wybranyKlientId},okres=${wybranyOkres})}"
+                       target="_blank" class="btn">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        Pobierz PDF
+                    </a>
+                    <a th:href="@{/raporty/vat/xlsx(klientId=${wybranyKlientId},okres=${wybranyOkres})}"
+                       class="btn">
+                        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/></svg>
+                        Pobierz XLSX
+                    </a>
+                </div>
+
+                <!-- SALDO GŁÓWNE -->
+                <div class="saldo-card">
+                    <div class="label">Saldo VAT za okres <span th:text="${okres}">2026-05</span></div>
+                    <div class="value" th:text="${#numbers.formatDecimal(saldo, 1, 'POINT', 2, 'COMMA')} + ' zł'">0,00 zł</div>
+                    <div class="desc"
+                         th:text="${saldoDoZaplaty ? 'Do zapłaty do Urzędu Skarbowego' : (saldo.signum() == 0 ? 'Saldo zerowe' : 'Do zwrotu z Urzędu Skarbowego')}">
+                        Do zapłaty
+                    </div>
+                </div>
+
+                <!-- SUMY SPRZEDAŻY I ZAKUPÓW -->
+                <div class="report-summary">
+                    <div class="summary-block">
+                        <h3>Sprzedaż (VAT należny)</h3>
+                        <div class="summary-row">
+                            <span>Liczba faktur:</span>
+                            <strong th:text="${#lists.size(sprzedaz)}">0</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>Razem netto:</span>
+                            <strong th:text="${#numbers.formatDecimal(netSprzedaz, 1, 'POINT', 2, 'COMMA')} + ' zł'">0,00 zł</strong>
+                        </div>
+                        <div class="summary-row total">
+                            <span>VAT należny:</span>
+                            <strong th:text="${#numbers.formatDecimal(vatNalezny, 1, 'POINT', 2, 'COMMA')} + ' zł'">0,00 zł</strong>
+                        </div>
+                    </div>
+
+                    <div class="summary-block">
+                        <h3>Zakupy (VAT naliczony)</h3>
+                        <div class="summary-row">
+                            <span>Liczba faktur:</span>
+                            <strong th:text="${#lists.size(zakup)}">0</strong>
+                        </div>
+                        <div class="summary-row">
+                            <span>Razem netto:</span>
+                            <strong th:text="${#numbers.formatDecimal(netZakup, 1, 'POINT', 2, 'COMMA')} + ' zł'">0,00 zł</strong>
+                        </div>
+                        <div class="summary-row total">
+                            <span>VAT naliczony:</span>
+                            <strong th:text="${#numbers.formatDecimal(vatNaliczony, 1, 'POINT', 2, 'COMMA')} + ' zł'">0,00 zł</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TABELA FAKTUR SPRZEDAŻOWYCH -->
+                <div class="form-card" th:if="${not #lists.isEmpty(sprzedaz)}">
+                    <h2 class="form-section-title">Faktury sprzedażowe</h2>
+                    <table class="positions-table">
+                        <thead>
+                        <tr>
+                            <th>Numer</th>
+                            <th>Data</th>
+                            <th style="text-align: right;">Netto</th>
+                            <th style="text-align: right;">VAT</th>
+                            <th style="text-align: right;">Brutto</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="f : ${sprzedaz}">
+                            <td th:text="${f.numer}"></td>
+                            <td th:text="${f.dataWystawienia}"></td>
+                            <td style="text-align: right;" th:text="${#numbers.formatDecimal(f.kwotaNetto, 1, 'POINT', 2, 'COMMA')} + ' zł'"></td>
+                            <td style="text-align: right;" th:text="${#numbers.formatDecimal(f.kwotaVat, 1, 'POINT', 2, 'COMMA')} + ' zł'"></td>
+                            <td style="text-align: right;" th:text="${#numbers.formatDecimal(f.kwotaBrutto, 1, 'POINT', 2, 'COMMA')} + ' zł'"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- TABELA FAKTUR KOSZTOWYCH -->
+                <div class="form-card" th:if="${not #lists.isEmpty(zakup)}">
+                    <h2 class="form-section-title">Faktury kosztowe</h2>
+                    <table class="positions-table">
+                        <thead>
+                        <tr>
+                            <th>Numer</th>
+                            <th>Data</th>
+                            <th style="text-align: right;">Netto</th>
+                            <th style="text-align: right;">VAT</th>
+                            <th style="text-align: right;">Brutto</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="f : ${zakup}">
+                            <td th:text="${f.numer}"></td>
+                            <td th:text="${f.dataWystawienia}"></td>
+                            <td style="text-align: right;" th:text="${#numbers.formatDecimal(f.kwotaNetto, 1, 'POINT', 2, 'COMMA')} + ' zł'"></td>
+                            <td style="text-align: right;" th:text="${#numbers.formatDecimal(f.kwotaVat, 1, 'POINT', 2, 'COMMA')} + ' zł'"></td>
+                            <td style="text-align: right;" th:text="${#numbers.formatDecimal(f.kwotaBrutto, 1, 'POINT', 2, 'COMMA')} + ' zł'"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="form-card" th:if="${#lists.isEmpty(sprzedaz) and #lists.isEmpty(zakup)}">
+                    <p style="text-align: center; color: var(--ink-muted); padding: 20px;">
+                        Brak faktur w wybranym okresie dla tego klienta.
+                    </p>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+<script th:src="@{/js/month-picker.js}"></script>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pl.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/monthSelect/index.js"></script>
+</html>

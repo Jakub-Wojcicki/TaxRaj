@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${deklaracja.id == null ? 'Nowa deklaracja' : 'Edytuj deklarację'}">Deklaracja</title>
+  <link rel="icon" type="image/svg+xml" th:href="@{/svg/logo.svg}">
+  <link rel="stylesheet" th:href="@{/css/base.css}">
+  <link rel="stylesheet" th:href="@{/css/layout.css}">
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+  <link rel="stylesheet" th:href="@{/css/faktura-form.css}">
+</head>
+<body>
+<div class="layout">
+
+  <aside th:replace="~{fragments/sidebar :: sidebar('deklaracje')}"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 th:text="${deklaracja.id == null ? 'Nowa deklaracja' : 'Edytuj deklarację'}">Deklaracja</h1>
+        <p>Wypełnij dane deklaracji</p>
+      </div>
+    </header>
+
+    <div class="content">
+      <form th:action="@{/deklaracje/zapisz}" th:object="${deklaracja}" method="post">
+        <input type="hidden" th:field="*{id}">
+
+        <!-- DANE PODSTAWOWE -->
+        <div class="form-card">
+          <h2 class="form-section-title">Dane podstawowe</h2>
+
+          <div class="form-grid">
+            <div class="form-group-v">
+              <label>Typ deklaracji</label>
+              <select th:field="*{typ}" required>
+                <option value="">— wybierz —</option>
+                <option th:each="t : ${typy}" th:value="${t}" th:text="${t}"></option>
+              </select>
+            </div>
+
+            <div class="form-group-v">
+              <label>Okres</label>
+              <input type="text" th:field="*{okres}" placeholder="2026-05 lub 2026-Q2" required>
+            </div>
+
+            <div class="form-group-v">
+              <label>Klient</label>
+              <select th:field="*{klient}" required>
+                <option value="">— wybierz —</option>
+                <option th:each="k : ${klienci}" th:value="${k.id}" th:text="${k.nazwa}"></option>
+              </select>
+            </div>
+
+            <div class="form-group-v">
+              <label>Status</label>
+              <select th:field="*{status}" required>
+                <option th:each="s : ${statusy}" th:value="${s}" th:text="${s}"></option>
+              </select>
+            </div>
+
+            <div class="form-group-v">
+              <label>Data złożenia</label>
+              <input type="date" th:field="*{dataZlozenia}">
+            </div>
+          </div>
+        </div>
+
+        <!-- KWOTY VAT -->
+        <div class="form-card">
+          <h2 class="form-section-title">Kwoty (dla deklaracji VAT)</h2>
+
+          <div class="form-grid">
+            <div class="form-group-v">
+              <label>Podstawa</label>
+              <input type="number" step="0.01" th:field="*{podstawa}" placeholder="0.00">
+            </div>
+
+            <div class="form-group-v">
+              <label>VAT naliczony</label>
+              <input type="number" step="0.01" th:field="*{vatNaliczony}" placeholder="0.00">
+            </div>
+
+            <div class="form-group-v">
+              <label>VAT należny</label>
+              <input type="number" step="0.01" th:field="*{vatNalezny}" placeholder="0.00">
+            </div>
+
+            <div class="form-group-v">
+              <label>Saldo (obliczane)</label>
+              <input type="text" id="saldoPodglad" readonly placeholder="—"
+                     style="background: var(--paper); font-family: 'Playfair Display', serif; color: var(--gold);">
+            </div>
+          </div>
+
+          <p class="info-text">
+            Saldo = VAT należny − VAT naliczony. Dla deklaracji innych niż VAT (PIT, CIT, ZUS) pola kwot można pozostawić puste.
+          </p>
+        </div>
+
+        <!-- AKCJE -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Zapisz deklarację</button>
+          <a th:href="@{/deklaracje}" class="btn">Anuluj</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script th:src="@{/js/deklaracja-form.js}"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${klient.id == null ? 'Nowy klient' : 'Edytuj klienta'}">Klient</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/svg/logo.svg}">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 700px; }
+        .form-grid .full { grid-column: 1 / -1; }
+        .form-group-v { display: flex; flex-direction: column; gap: 6px; }
+        .form-group-v label { font-size: 12px; color: var(--ink-soft); font-weight: 500; letter-spacing: .05em; text-transform: uppercase; }
+        .form-group-v input {
+            padding: 10px 12px; border: 1.5px solid var(--paper-dark); border-radius: 8px;
+            font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--white);
+            color: var(--ink); outline: none; transition: border-color .2s;
+        }
+        .form-group-v input:focus { border-color: var(--gold); }
+        .form-actions { display: flex; gap: 12px; margin-top: 24px; }
+        .form-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--paper-dark); padding: 28px; }
+    </style>
+</head>
+<body>
+<div class="layout">
+
+    <aside th:replace="~{fragments/sidebar :: sidebar('klienci')}"></aside>
+
+    <div class="main">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1 th:text="${klient.id == null ? 'Nowy klient' : 'Edytuj klienta'}">Klient</h1>
+                <p>Wypełnij dane klienta</p>
+            </div>
+        </header>
+
+        <div class="content">
+            <div class="form-card">
+                <form th:action="@{/klienci/zapisz}" th:object="${klient}" method="post">
+                    <input type="hidden" th:field="*{id}">
+
+                    <div class="form-summary-error" th:if="${#fields.hasErrors('*')}">
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                        </svg>
+                        <span>Formularz zawiera błędy. Popraw oznaczone pola i spróbuj ponownie.</span>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group-v full">
+                            <label>Nazwa</label>
+                            <input type="text" th:field="*{nazwa}" placeholder="ABC Sp. z o.o."
+                                   th:errorclass="input-error">
+                            <span class="field-error" th:if="${#fields.hasErrors('nazwa')}" th:errors="*{nazwa}"></span>
+                        </div>
+
+                        <div class="form-group-v">
+                            <label>NIP</label>
+                            <input type="text" th:field="*{nip}" placeholder="1234567890" maxlength="10"
+                                   th:errorclass="input-error">
+                            <span class="field-error" th:if="${#fields.hasErrors('nip')}" th:errors="*{nip}"></span>
+                        </div>
+
+                        <div class="form-group-v">
+                            <label>Telefon</label>
+                            <input type="text" th:field="*{telefon}" placeholder="123456789"
+                                   th:errorclass="input-error">
+                            <span class="field-error" th:if="${#fields.hasErrors('telefon')}" th:errors="*{telefon}"></span>
+                        </div>
+
+                        <div class="form-group-v full">
+                            <label>Adres</label>
+                            <input type="text" th:field="*{adres}" placeholder="ul. Testowa 1, 00-000 Warszawa"
+                                   th:errorclass="input-error">
+                            <span class="field-error" th:if="${#fields.hasErrors('adres')}" th:errors="*{adres}"></span>
+                        </div>
+
+                        <div class="form-group-v full">
+                            <label>Email</label>
+                            <input type="email" th:field="*{email}" placeholder="kontakt@firma.pl"
+                                   th:errorclass="input-error">
+                            <span class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Zapisz</button>
+                        <a th:href="@{/klienci}" class="btn">Anuluj</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

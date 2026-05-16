@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Tax-Raj | Deklaracje</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/svg/logo.svg}">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+</head>
+<body>
+<div class="layout">
+
+    <aside th:replace="~{fragments/sidebar :: sidebar('deklaracje')}"></aside>
+
+    <div class="main">
+
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Deklaracje</h1>
+                <p>Lista deklaracji podatkowych i ubezpieczeniowych</p>
+            </div>
+            <div class="topbar-right">
+                <a th:href="@{/deklaracje/generuj}" class="btn">
+                    <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    Generuj z faktur
+                </a>
+                <a th:href="@{/deklaracje/nowa}" class="btn btn-primary">
+                    <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Nowa deklaracja
+                </a>
+            </div>
+        </header>
+
+        <div class="content">
+            <div class="filter-bar">
+                <form th:action="@{/deklaracje}" method="get" class="filter-form">
+
+                    <div class="filter-group">
+                        <label>Klient</label>
+                        <select name="klientId">
+                            <option value="">— wszyscy —</option>
+                            <option th:each="k : ${klienci}" th:value="${k.id}" th:text="${k.nazwa}"
+                                    th:selected="${filtr.klientId != null and filtr.klientId == k.id}"></option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Typ</label>
+                        <select name="typ">
+                            <option value="">— wszystkie —</option>
+                            <option th:each="t : ${typy}" th:value="${t}" th:text="${t}"
+                                    th:selected="${filtr.typ != null and filtr.typ == t}"></option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select name="status">
+                            <option value="">— wszystkie —</option>
+                            <option th:each="s : ${statusy}" th:value="${s}" th:text="${s}"
+                                    th:selected="${filtr.status != null and filtr.status == s}"></option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Okres</label>
+                        <input type="text" name="okres" th:value="${filtr.okres}" placeholder="2026-05">
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Złożona od</label>
+                        <input type="date" name="zlozonaOd" th:value="${filtr.zlozonaOd}">
+                    </div>
+
+                    <div class="filter-group">
+                        <label>Złożona do</label>
+                        <input type="date" name="zlozonaDo" th:value="${filtr.zlozonaDo}">
+                    </div>
+
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-primary">Filtruj</button>
+                        <a th:href="@{/deklaracje}" class="btn">Wyczyść</a>
+                    </div>
+
+                </form>
+            </div>
+            <div class="table-card">
+                <table id="declarationTable">
+                    <thead>
+                    <tr>
+                        <th>
+                            <a th:href="@{/deklaracje(
+                              sort='typ',
+                              kierunek=${sortPole == 'typ' and sortKierunek == 'ASC' ? 'DESC' : 'ASC'},
+                              klientId=${filtr.klientId},
+                              typ=${filtr.typ},
+                              status=${filtr.status},
+                              okres=${filtr.okres},
+                              zlozonaOd=${filtr.zlozonaOd},
+                              zlozonaDo=${filtr.zlozonaDo})}"
+                               class="sort-link">
+                                Typ
+                                <span th:if="${sortPole == 'typ'}" th:text="${sortKierunek == 'ASC' ? '↑' : '↓'}">↓</span>
+                            </a>
+                        </th>
+                        <th>
+                            <a th:href="@{/deklaracje(
+                              sort='okres',
+                              kierunek=${sortPole == 'okres' and sortKierunek == 'ASC' ? 'DESC' : 'ASC'},
+                              klientId=${filtr.klientId},
+                              typ=${filtr.typ},
+                              status=${filtr.status},
+                              okres=${filtr.okres},
+                              zlozonaOd=${filtr.zlozonaOd},
+                              zlozonaDo=${filtr.zlozonaDo})}"
+                               class="sort-link">
+                                Okres
+                                <span th:if="${sortPole == 'okres'}" th:text="${sortKierunek == 'ASC' ? '↑' : '↓'}">↓</span>
+                            </a>
+                        </th>
+                        <th>Klient</th>
+                        <th>
+                            <a th:href="@{/deklaracje(
+                              sort='podstawa',
+                              kierunek=${sortPole == 'podstawa' and sortKierunek == 'ASC' ? 'DESC' : 'ASC'},
+                              klientId=${filtr.klientId},
+                              typ=${filtr.typ},
+                              status=${filtr.status},
+                              okres=${filtr.okres},
+                              zlozonaOd=${filtr.zlozonaOd},
+                              zlozonaDo=${filtr.zlozonaDo})}"
+                               class="sort-link">
+                                Podstawa
+                                <span th:if="${sortPole == 'podstawa'}" th:text="${sortKierunek == 'ASC' ? '↑' : '↓'}">↓</span>
+                            </a>
+                        </th>
+                        <th>Saldo VAT</th>
+                        <th>
+                            <a th:href="@{/deklaracje(
+                              sort='status',
+                              kierunek=${sortPole == 'status' and sortKierunek == 'ASC' ? 'DESC' : 'ASC'},
+                              klientId=${filtr.klientId},
+                              typ=${filtr.typ},
+                              status=${filtr.status},
+                              okres=${filtr.okres},
+                              zlozonaOd=${filtr.zlozonaOd},
+                              zlozonaDo=${filtr.zlozonaDo})}"
+                               class="sort-link">
+                                Status
+                                <span th:if="${sortPole == 'status'}" th:text="${sortKierunek == 'ASC' ? '↑' : '↓'}">↓</span>
+                            </a>
+                        </th>
+                        <th>
+                            <a th:href="@{/deklaracje(
+                              sort='dataZlozenia',
+                              kierunek=${sortPole == 'dataZlozenia' and sortKierunek == 'ASC' ? 'DESC' : 'ASC'},
+                              klientId=${filtr.klientId},
+                              typ=${filtr.typ},
+                              status=${filtr.status},
+                              okres=${filtr.okres},
+                              zlozonaOd=${filtr.zlozonaOd},
+                              zlozonaDo=${filtr.zlozonaDo})}"
+                               class="sort-link">
+                                Data złożenia
+                                <span th:if="${sortPole == 'dataZlozenia'}" th:text="${sortKierunek == 'ASC' ? '↑' : '↓'}">↓</span>
+                            </a>
+                        </th>
+                        <th>Sporządził</th>
+                        <th>Akcje</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="d : ${deklaracje}">
+                        <td th:text="${d.typ}"></td>
+                        <td th:text="${d.okres}"></td>
+                        <td th:text="${d.klient != null ? d.klient.nazwa : '—'}"></td>
+                        <td th:text="${d.podstawa != null ? #numbers.formatDecimal(d.podstawa, 1, 'POINT', 2, 'COMMA') + ' zł' : '—'}"></td>
+                        <td th:text="${#numbers.formatDecimal(d.obliczSaldo(), 1, 'POINT', 2, 'COMMA')} + ' zł'"></td>
+                        <td>
+                <span class="badge"
+                      th:classappend="${d.status.name() == 'ZLOZONA'} ? 'badge-green' : (${d.status.name() == 'ROBOCZA'} ? 'badge-gold' : (${d.status.name() == 'KOREKTA'} ? 'badge-red' : 'badge-blue'))"
+                      th:text="${d.status}">Status</span>
+                        </td>
+                        <td th:text="${d.dataZlozenia != null ? d.dataZlozenia : '—'}"></td>
+                        <td th:text="${d.uzytkownik != null ? d.uzytkownik.imie + ' ' + d.uzytkownik.nazwisko : '—'}"></td>
+                        <td>
+                            <a th:href="@{/deklaracje/{id}/edytuj(id=${d.id})}"
+                               style="margin-right:8px; color:var(--gold); text-decoration:none;">Edytuj</a>
+                            <a th:href="@{/deklaracje/{id}/usun(id=${d.id})}"
+                               onclick="return confirm('Czy na pewno usunąć tę deklarację?');"
+                               style="color:var(--red); text-decoration:none;">Usuń</a>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(deklaracje)}">
+                        <td colspan="9" style="text-align:center; padding:32px; color:var(--ink-muted);">
+                            Brak deklaracji. <a th:href="@{/deklaracje/nowa}" style="color:var(--gold);">Dodaj pierwszą</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script th:src="@{/js/deklaracje.js}"></script>
+</body>
+</html>
