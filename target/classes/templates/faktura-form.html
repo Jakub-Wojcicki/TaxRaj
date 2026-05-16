@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="${faktura.id == null ? 'Nowa faktura' : 'Edytuj fakturę'}">Faktura</title>
+  <link rel="icon" type="image/svg+xml" th:href="@{/svg/logo.svg}">
+  <link rel="stylesheet" th:href="@{/css/base.css}">
+  <link rel="stylesheet" th:href="@{/css/layout.css}">
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+  <link rel="stylesheet" th:href="@{/css/faktura-form.css}">
+</head>
+<body>
+<div class="layout">
+
+  <aside th:replace="~{fragments/sidebar :: sidebar('faktury')}"></aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 th:text="${faktura.id == null ? 'Nowa faktura' : 'Edytuj fakturę'}">Faktura</h1>
+        <p>Wypełnij dane faktury i jej pozycje</p>
+      </div>
+    </header>
+
+    <div class="content">
+      <form th:action="@{/faktury/zapisz}" th:object="${faktura}" method="post">
+        <input type="hidden" th:field="*{id}">
+
+        <!-- PODSUMOWANIE BŁĘDÓW -->
+        <div class="form-summary-error" th:if="${#fields.hasErrors('*')}">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span>Formularz zawiera błędy. Popraw oznaczone pola i spróbuj ponownie.</span>
+        </div>
+
+        <!-- NAGŁÓWEK FAKTURY -->
+        <div class="form-card">
+          <h2 class="form-section-title">Dane faktury</h2>
+
+          <div class="form-grid">
+            <div class="form-group-v">
+              <label>Numer faktury</label>
+              <input type="text" th:field="*{numer}" id="numerFaktury" placeholder="FV/2026/05/001"
+                     th:errorclass="input-error">
+              <span class="field-error" th:if="${#fields.hasErrors('numer')}" th:errors="*{numer}"></span>
+            </div>
+
+            <div class="form-group-v">
+              <label>Typ</label>
+              <select th:field="*{typ}" id="typFaktury" th:errorclass="input-error">
+                <option th:each="t : ${typy}" th:value="${t}" th:text="${t}"></option>
+              </select>
+              <span class="field-error" th:if="${#fields.hasErrors('typ')}" th:errors="*{typ}"></span>
+            </div>
+
+            <div class="form-group-v">
+              <label>Data wystawienia</label>
+              <input type="date" th:field="*{dataWystawienia}" th:errorclass="input-error">
+              <span class="field-error" th:if="${#fields.hasErrors('dataWystawienia')}" th:errors="*{dataWystawienia}"></span>
+            </div>
+
+            <div class="form-group-v">
+              <label>Data płatności</label>
+              <input type="date" th:field="*{dataPlatnosci}" th:errorclass="input-error">
+              <span class="field-error" th:if="${#fields.hasErrors('dataPlatnosci')}" th:errors="*{dataPlatnosci}"></span>
+            </div>
+
+            <div class="form-group-v">
+              <label>Status</label>
+              <select th:field="*{status}" th:errorclass="input-error">
+                <option th:each="s : ${statusy}" th:value="${s}" th:text="${s}"></option>
+              </select>
+              <span class="field-error" th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></span>
+            </div>
+
+            <div class="form-group-v">
+              <label>Waluta</label>
+              <input type="text" th:field="*{waluta}" placeholder="PLN" maxlength="3"
+                     th:errorclass="input-error">
+              <span class="field-error" th:if="${#fields.hasErrors('waluta')}" th:errors="*{waluta}"></span>
+            </div>
+
+            <div class="form-group-v">
+              <label>Klient</label>
+              <select th:field="*{klient}" th:errorclass="input-error">
+                <option value="">— wybierz —</option>
+                <option th:each="k : ${klienci}" th:value="${k.id}" th:text="${k.nazwa}"></option>
+              </select>
+              <span class="field-error" th:if="${#fields.hasErrors('klient')}" th:errors="*{klient}"></span>
+            </div>
+
+            <div class="form-group-v">
+              <label>Kontrahent (opcjonalnie)</label>
+              <select th:field="*{kontrahent}" th:errorclass="input-error">
+                <option value="">— brak —</option>
+                <option th:each="k : ${kontrahenci}" th:value="${k.id}" th:text="${k.nazwa}"></option>
+              </select>
+              <span class="field-error" th:if="${#fields.hasErrors('kontrahent')}" th:errors="*{kontrahent}"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- POZYCJE FAKTURY -->
+        <div class="form-card">
+          <div class="card-header-row">
+            <h2 class="form-section-title">Pozycje faktury</h2>
+            <button type="button" id="addRow" class="btn btn-primary">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Dodaj pozycję
+            </button>
+          </div>
+
+          <div class="positions-wrapper">
+            <table class="positions-table">
+              <thead>
+              <tr>
+                <th style="width: 30%;">Nazwa / Opis</th>
+                <th style="width: 9%;">Ilość</th>
+                <th style="width: 9%;">Jednostka</th>
+                <th style="width: 13%;">Cena netto</th>
+                <th style="width: 10%;">VAT %</th>
+                <th style="width: 12%;">Wart. netto</th>
+                <th style="width: 12%;">Wart. brutto</th>
+                <th style="width: 5%;"></th>
+              </tr>
+              </thead>
+              <tbody id="positionsBody">
+              <tr th:each="poz, iter : *{pozycje}" class="position-row">
+                <td><input type="text" th:field="*{pozycje[__${iter.index}__].nazwa}" placeholder="Np. Usługa księgowa"></td>
+                <td><input type="number" step="0.01" class="qty" th:field="*{pozycje[__${iter.index}__].ilosc}" placeholder="1"></td>
+                <td><input type="text" th:field="*{pozycje[__${iter.index}__].jednostka}" placeholder="szt."></td>
+                <td><input type="number" step="0.01" class="price" th:field="*{pozycje[__${iter.index}__].cenaNetto}" placeholder="0.00"></td>
+                <td><input type="number" step="0.01" class="vat" th:field="*{pozycje[__${iter.index}__].stawkaVat}" placeholder="23"></td>
+                <td class="net-value">0.00</td>
+                <td class="gross-value">0.00</td>
+                <td>
+                  <button type="button" class="remove-row" title="Usuń">
+                    <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </td>
+              </tr>
+              </tbody>
+              <tfoot>
+              <tr>
+                <td colspan="5" style="text-align: right; font-weight: 500;">Razem:</td>
+                <td class="total-net">0.00</td>
+                <td class="total-gross">0.00</td>
+                <td></td>
+              </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <p class="info-text">Kwoty są obliczane automatycznie z pozycji faktury.</p>
+        </div>
+
+        <!-- AKCJE -->
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Zapisz fakturę</button>
+          <a th:href="@{/faktury}" class="btn">Anuluj</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Szablon wiersza dla JS -->
+<template id="positionTemplate">
+  <tr class="position-row">
+    <td><input type="text" name="pozycje[INDEX].nazwa" placeholder="Np. Usługa księgowa"></td>
+    <td><input type="number" step="0.01" class="qty" name="pozycje[INDEX].ilosc" value="1"></td>
+    <td><input type="text" name="pozycje[INDEX].jednostka" placeholder="szt."></td>
+    <td><input type="number" step="0.01" class="price" name="pozycje[INDEX].cenaNetto" placeholder="0.00"></td>
+    <td><input type="number" step="0.01" class="vat" name="pozycje[INDEX].stawkaVat" placeholder="23"></td>
+    <td class="net-value">0.00</td>
+    <td class="gross-value">0.00</td>
+    <td>
+      <button type="button" class="remove-row" title="Usuń">
+        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </td>
+  </tr>
+</template>
+
+<script th:src="@{/js/faktura-form.js}"></script>
+</body>
+</html>

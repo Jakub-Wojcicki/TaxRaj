@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Tax-Raj | Raporty</title>
+    <link rel="icon" type="image/svg+xml" th:href="@{/svg/logo.svg}">
+    <link rel="stylesheet" th:href="@{/css/base.css}">
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        .report-card {
+            background: var(--white);
+            border: 1px solid var(--paper-dark);
+            border-radius: var(--radius);
+            padding: 28px 24px;
+            text-decoration: none;
+            color: inherit;
+            transition: border-color .2s, transform .2s, box-shadow .2s;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .report-card:hover {
+            border-color: var(--gold);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(184,151,58,.1);
+        }
+        .report-card .icon {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            background: var(--gold-pale);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .report-card .icon svg {
+            width: 22px; height: 22px;
+            stroke: var(--gold); fill: none;
+            stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+        }
+        .report-card h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 17px;
+            color: var(--ink);
+            font-weight: 600;
+        }
+        .report-card p {
+            font-size: 13px;
+            color: var(--ink-muted);
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+<div class="layout">
+
+    <aside th:replace="~{fragments/sidebar :: sidebar('raporty')}"></aside>
+
+    <div class="main">
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Raporty</h1>
+                <p>Zestawienia analityczne dla klientów</p>
+            </div>
+        </header>
+
+        <div class="content">
+            <div class="report-grid">
+
+                <a th:href="@{/raporty/vat}" class="report-card">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    </div>
+                    <h3>Zestawienie VAT</h3>
+                    <p>Podstawa do deklaracji VAT-7. Suma VAT należnego i naliczonego za okres, saldo do zapłaty lub zwrotu.</p>
+                </a>
+
+                <a th:href="@{/raporty/rejestr-sprzedazy}" class="report-card">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    </div>
+                    <h3>Rejestr sprzedaży</h3>
+                    <p>Lista faktur sprzedażowych za wybrany okres z sumami netto, VAT i brutto.</p>
+                </a>
+
+                <a th:href="@{/raporty/rejestr-zakupow}" class="report-card">
+                    <div class="icon">
+                        <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+                    </div>
+                    <h3>Rejestr zakupów</h3>
+                    <p>Lista faktur kosztowych za wybrany okres z sumami netto, VAT i brutto.</p>
+                </a>
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
